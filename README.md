@@ -87,18 +87,12 @@ cd react-express-login-system
   SESSION_SECRET=YOUR-SESSION-SECRET
   ```
 
-4. Start exactly one backend process from the `backend` folder (use either `npm start` or `npm run dev`, not both):
-   ```
-   cd backend
-   npm start
-   ```
-
-5. In a second terminal, start the frontend from the repository root:
+4. Start the backend and frontend together from the repository root:
    ```
    npm run dev
    ```
 
-6. Open `http://localhost:5173`. The frontend proxies authentication requests to the backend on port 3000.
+5. Open `http://localhost:5173`. The frontend proxies authentication requests to the backend on port 3001. The backend must be able to connect to MongoDB before it starts accepting requests.
 
 ---
 
