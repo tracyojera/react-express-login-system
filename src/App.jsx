@@ -40,11 +40,22 @@ function App() {
     };
   }, [setUser]);
 
-  if (isLoading) {
-    return <div className="auth-loading" role="status">Checking your session...</div>;
-  }
-
-  return user ? <Protected /> : <Login />;
+  return (
+    <div className="app-shell">
+      <main className="app-content">
+        {isLoading ? (
+          <div className="auth-loading" role="status">Checking your session...</div>
+        ) : user ? (
+          <Protected />
+        ) : (
+          <Login />
+        )}
+      </main>
+      <footer className="app-footer">
+        ABER TRACY OJERA (S25D14/007) AND AKANKUNDA MERCY (S25D14/005)
+      </footer>
+    </div>
+  );
 }
 
 export default App;

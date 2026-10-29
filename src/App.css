@@ -2,20 +2,42 @@
     font-family: "Roboto", "Helvetica Neue", Arial, sans-serif;
 }
 
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.app-footer {
+  padding: 16px;
+  background: #ffffff;
+  color: #555;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 .auth-loading {
   display: flex;
+  flex: 1;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 0;
   background: #f4f4f4;
   color: #555;
 }
 
 .login-container {
   display: flex;
+  flex: 1;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 0;
   background: #f4f4f4;
 }
 
@@ -87,10 +109,11 @@ form button:hover {
 
 .user-container {
   display: flex;
+  flex: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  min-height: 0;
   background: #f4f4f4;
 }
 
