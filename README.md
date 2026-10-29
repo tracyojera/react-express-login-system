@@ -83,16 +83,22 @@ cd react-express-login-system
 3. Configure environment variables:
 - Create a `.env` file in the backend folder with the following variables:
   ```
+  PORT=3001
   MONGO_URI=YOUR-MONGODB-URL  
   SESSION_SECRET=YOUR-SESSION-SECRET
   ```
+  `PORT` is optional; the backend and frontend proxy both default to 3001 and use this value if set.
 
-4. Start the backend and frontend together from the repository root:
+4. Start the backend and frontend together from the repository root (either command):
    ```
    npm run dev
    ```
+   or
+   ```
+   npm start
+   ```
 
-5. Open `http://localhost:5173`. The frontend proxies authentication requests to the backend on port 3001. The backend must be able to connect to MongoDB before it starts accepting requests.
+5. Open `http://localhost:5173`. The frontend uses port 5173 and proxies authentication requests to the backend. The backend must be able to connect to MongoDB before it starts accepting requests.
 
 ---
 

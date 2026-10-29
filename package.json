@@ -6,12 +6,11 @@
   "author": "@owpji Peter Isaac",
   "scripts": {
     "dev": "concurrently --kill-others-on-fail \"npm run dev --prefix backend\" \"vite\"",
-    "start": "vite",
+    "start": "npm run dev",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
-  "proxy": "http://localhost:3001",
   "dependencies": {
     "axios": "^1.7.9",
     "prop-types": "^15.8.1",
