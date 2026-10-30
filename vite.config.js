@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import process from 'node:process'
 import { defineConfig, loadEnv } from 'vite'
-import react from '@vitejs/plugin-react-swc'
+import react from '@vitejs/plugin-react'
 
 const backendDirectory = fileURLToPath(new URL('./backend', import.meta.url))
 

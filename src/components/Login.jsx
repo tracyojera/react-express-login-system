@@ -1,6 +1,14 @@
 import { useState } from 'react';
 import { useAuth } from './AuthContext';
 import Register from './Register';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+const response = await fetch(`${API_URL}/login`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email, password }),
+  credentials: 'include' // <-- CRITICAL: Required for session cookies across Vercel and Render
+});
 
 function Login() {
     const { login } = useAuth();
