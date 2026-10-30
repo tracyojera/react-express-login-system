@@ -3,7 +3,7 @@
 A simple and efficient full-stack login and registration system built with **React**, **Express.js**, and **MongoDB**.
 
 ## Live Demo  
-https://react-express-login.onrender.com    
+https://react-express-login-system-w27q.vercel.app
 
 
 ---
@@ -114,7 +114,29 @@ cd react-express-login-system
 2. Enter your credentials.
 3. Upon successful login, access protected routes or features.
 
----  
+## **Deployment**
+
+### Vercel frontend
+
+- Set the project root directory to the repository root.
+- Select **Vite** as the framework.
+- Use `npm install` as the install command, `npm run build` as the build command, and `dist` as the output directory.
+- Keep `vercel.json` at the repository root. It forwards `/login`, `/register`, `/profile`, and `/logout` to the Render backend.
+
+### Render backend
+
+- Create a Web Service using `backend` as the root directory.
+- Use `npm install` as the build command and `npm start` as the start command.
+- Set these environment variables in Render:
+  - `MONGO_URI`: MongoDB connection string.
+  - `SESSION_SECRET`: a long, random secret.
+  - `NODE_ENV`: `production`.
+  - `FRONTEND_URL`: `https://react-express-login-system-w27q.vercel.app`.
+- Let Render provide `PORT`; do not set it manually.
+
+If the Vercel domain changes, update `FRONTEND_URL` in Render. If the Render service URL changes, update the destination URLs in the root `vercel.json`.
+
+---
 
 ## **License**
 

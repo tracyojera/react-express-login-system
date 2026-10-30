@@ -24,11 +24,12 @@ if (!sessionSecret) {
 }
 
 const corsOptions = {
-  origin: 'http://localhost:5173',
+  origin: [ 'http://localhost:5173', process.env.FRONTEND_URL ].filter(Boolean),
   credentials: true,
   optionsSuccessStatus: 200
 };
 
+app.set('trust proxy', 1);
 app.use(cors(corsOptions));
 
 app.use(bodyParser.json());
@@ -39,6 +40,11 @@ app.use(session({
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  }
 }));
 
 app.use(express.static(path.join(__dirname, '/dist')));
