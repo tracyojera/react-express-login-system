@@ -1,0 +1,13 @@
+{
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "rewrites": [
+    { "source": "/login", "destination": "https://react-express-login-system-1-sy89.onrender.com/login" },
+    { "source": "/register", "destination": "https://react-express-login-system-1-sy89.onrender.com/register" },
+    { "source": "/profile", "destination": "https://react-express-login-system-1-sy89.onrender.com/profile" },
+    { "source": "/logout", "destination": "https://react-express-login-system-1-sy89.onrender.com/logout" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

@@ -23,8 +23,25 @@ if (!sessionSecret) {
   throw new Error('SESSION_SECRET must be set in backend/.env');
 }
 
+// CRITICAL FIX 1: Trust proxy is required on Render/Vercel for secure cookies
+app.set('trust proxy', 1);
+
+// CRITICAL FIX 2: Allow both your local Vite frontend and your live Vercel frontend
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://react-express-login-system-7nxk.vercel.app' // Add your exact Vercel URL here (no trailing slash)
+];
+
 const corsOptions = {
-  origin: 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, or Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 };
@@ -32,13 +49,19 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use(bodyParser.json());
-
 app.use(express.urlencoded({ extended: false }));
 
+// CRITICAL FIX 3: Configure session cookies for cross-site HTTPS (Render + Vercel)
 app.use(session({
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
+  proxy: true, // Trust the reverse proxy
+  cookie: {
+    secure: true, // Required for HTTPS (Vercel & Render)
+    sameSite: 'none', // Required for cross-site cookies between Vercel and Render
+    maxAge: 1000 * 60 * 60 * 24 // 1 day
+  }
 }));
 
 app.use(express.static(path.join(__dirname, '/dist')));
@@ -46,150 +69,4 @@ app.use(express.static(path.join(__dirname, '/dist')));
 const client = new MongoClient(uri);
 const usersCollection = () => client.db('login-system').collection('users');
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-});
-
-app.get('/profile', (req, res) => {
-  if (!req.session.email) {
-    return res.status(200).send({ message: 'Not logged in' });
-  } else {
-    return res.send({ email: req.session.email, name: req.session.name });
-  }
-});
-
-function sanitizeInput(input) {
-  return sanitizeHtml(input, {
-    allowedTags: [],  
-    allowedAttributes: {},  
-  });
-}
-
-app.post('/login', async (req, res) => {
-  const { email: submittedEmail, password } = req.body || {};
-  if (typeof submittedEmail !== 'string' || !submittedEmail.trim() ||
-      typeof password !== 'string' || !password) {
-    return res.status(400).send({ success: false, message: 'Email and password are required.' });
-  }
-
-  try {
-    const email = submittedEmail.trim().toLowerCase();
-    const user = await usersCollection().findOne(
-      { email },
-      { collation: { locale: 'en', strength: 2 } }
-    );
-
-    if (user) {
-      const match = await bcrypt.compare(password, user.password);
-
-      if (match) {
-        req.session.name = user.name;
-        req.session.email = user.email;
-        return res.send({
-          success: true,
-          user: { name: user.name, email: user.email }
-        });
-      } else {
-        return res.status(400).send({ success: false, message: 'Incorrect email or password.' });
-      }
-    } else {
-      return res.status(400).send({ success: false, message: 'Incorrect email or password.' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ success: false, message: 'Error during the login process' });
-  }
-});
-
-app.post('/register', async (req, res) => {
-  const { name: submittedName, email: submittedEmail, password, confirmPassword } = req.body || {};
-
-  if (typeof submittedName !== 'string' || typeof submittedEmail !== 'string' ||
-      typeof password !== 'string' || typeof confirmPassword !== 'string') {
-    return res.status(400).send({ success: false, message: 'All fields are required.' });
-  }
-
-  const name = sanitizeInput(submittedName).trim();
-  const email = submittedEmail.trim().toLowerCase();
-  if (!name || !email || !password) {
-    return res.status(400).send({ success: false, message: 'All fields are required.' });
-  }
-  if (password !== confirmPassword) {
-    return res.status(400).send({ success: false, message: 'Passwords do not match.' });
-  }
-
-  try {
-    const users = usersCollection();
-    const userExists = await users.findOne(
-      { email },
-      { collation: { locale: 'en', strength: 2 } }
-    );
-
-    if (userExists) {
-      return res.status(400).send({ success: false, message: 'Email already exists.' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-    const newUser = { name, email, password: hashedPassword };
-    await users.insertOne(newUser);
-
-    req.session.name = name;
-    req.session.email = email;
-
-    return res.status(201).send({
-      success: true,
-      message: 'Registration successful!',
-      user: { name, email }
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).send({ success: false, message: 'Error during the registration.' });
-  }
-});
-
-app.post('/logout', (req, res) => {
-  if (!req.session) {
-    return res.send({ success: true });
-  }
-
-  req.session.destroy((error) => {
-    if (error) {
-      console.error(error);
-      return res.status(500).send({ success: false, message: 'Error during logout.' });
-    }
-
-    res.clearCookie('connect.sid');
-    return res.send({ success: true });
-  });
-});
-
-async function startServer() {
-  await client.connect();
-  console.log('Connected to MongoDB');
-  const server = app.listen(port, () => {
-    console.log(`App listening on port ${port}`);
-  });
-
-  server.on('error', (error) => {
-    if (error.code === 'EADDRINUSE') {
-      console.error(
-        `Port ${port} is already in use. Another backend is already running; stop it with Ctrl+C before starting another, or choose a different PORT.`
-      );
-    } else {
-      console.error('Failed to start the HTTP server:', error);
-    }
-
-    client.close().catch((closeError) => {
-      console.error('Failed to close the MongoDB connection:', closeError);
-    });
-    process.exitCode = 1;
-  });
-}
-
-startServer().catch(async (error) => {
-  console.error('Failed to start the server or connect to MongoDB:', error);
-  await client.close().catch((closeError) => {
-    console.error('Failed to close the MongoDB connection:', closeError);
-  });
-  process.exitCode = 1;
-});
+// ... (keep your existing routes: /, /profile, /login, /register, /logout exactly as they are)
